@@ -26,12 +26,14 @@ import { IContactRES, INewContact } from "@/types";
 import { yupResolver } from "@hookform/resolvers/yup";
 import ModalformEdit from "@/components/ModalEdit";
 
-export default function Home() {
+import Contact from "@/models/Contact";
+
+export default function Home({ intialContacts }: { intialContacts: Contact[] }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   // const [id, setId] = useState(null);
-  const [contacts, setContacts] = useState<any>([]);
+  const [contacts, setContacts] = useState<Contact[]>(intialContacts);
   // const [isFormOpen, setIsFormOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -57,9 +59,9 @@ export default function Home() {
     // console.log(formData);
     try {
       setIsLoading(true);
-      const response = await api.post("/contacts", formData);
-      setContacts(contacts.concat(response.data));
-      console.log(contacts);
+      const { data } = await api.post("/contacts", formData);
+      setContacts(data);
+
       toast({
         title: "Cadastrado com sucesso!",
         status: "success",
@@ -75,7 +77,9 @@ export default function Home() {
 
   const deleteContact = async (_id: any) => {
     try {
-      await api.delete(`/contacts/${_id}`);
+      const { data } = await api.delete(`/contacts/${_id}`);
+      setContacts(data);
+
       toast({
         title: "Deletado com sucesso!!",
         status: "info",
@@ -87,7 +91,7 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {});
+  useEffect(() => { });
 
   return (
     <Box>
@@ -192,7 +196,7 @@ export default function Home() {
                   <Td justifyContent="space-between">
                     <Flex>
                       <ModalformEdit
-                        id={contact._id}
+                        contact={contact}
                         contacts={contacts}
                         setContacts={setContacts}
                       />
@@ -215,4 +219,14 @@ export default function Home() {
       </Flex>
     </Box>
   );
+}
+
+export async function getStaticProps(context: any) {
+  const { data: contacts } = await api.get('/contacts')
+
+  return {
+    props: {
+      intialContacts: contacts,
+    }, // will be passed to the page component as props
+  }
 }

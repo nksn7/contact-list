@@ -22,14 +22,15 @@ import { INewContact, IContactRES } from "@/types";
 import { useState, Dispatch, SetStateAction } from "react";
 import api from "@/server/api";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import Contact from "@/models/Contact";
 
 interface ModalformEditProps {
-  id: string;
+  contact: Contact;
   contacts: IContactRES[];
   setContacts: Dispatch<SetStateAction<never[]>> | any;
 }
 
-const ModalformEdit = ({ id, contacts, setContacts }: ModalformEditProps) => {
+const ModalformEdit = ({ contact, contacts, setContacts }: ModalformEditProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const formSchema = yup.object().shape({
     name: yup.string().required("Nome completo obrigatório."),
@@ -50,9 +51,9 @@ const ModalformEdit = ({ id, contacts, setContacts }: ModalformEditProps) => {
 
   const editFormSubmit = async (formData: INewContact) => {
     try {
-      const response = await api.patch(`contacts/${id}`, formData);
-      const newList = contacts.filter((element: IContactRES) => element._id !== response.data.id);
-      setContacts(newList.concat(response.data));
+      const { data } = await api.patch(`contacts/${contact._id}`, formData);
+      console.log("data", data)
+      setContacts(data);
       onClose();
     } catch (error) {
       console.error(error);
@@ -73,6 +74,7 @@ const ModalformEdit = ({ id, contacts, setContacts }: ModalformEditProps) => {
               <Input
                 required
                 {...register("name")}
+                defaultValue={contact.name}
                 type="name"
                 onChange={(e) => setName(e.target.value)}
               />
@@ -86,6 +88,7 @@ const ModalformEdit = ({ id, contacts, setContacts }: ModalformEditProps) => {
               <FormLabel>E-mail</FormLabel>
               <Input
                 required
+                defaultValue={contact.email}
                 type="email"
                 {...register("email")}
                 onChange={(e) => setEmail(e.target.value)}
@@ -100,6 +103,7 @@ const ModalformEdit = ({ id, contacts, setContacts }: ModalformEditProps) => {
               <FormLabel>Telefone</FormLabel>
               <Input
                 required
+                defaultValue={contact.phone}
                 {...register("phone")}
                 type="phone"
                 onChange={(e) => setPhone(e.target.value)}
